@@ -718,18 +718,79 @@ function ____exports.pullEventAs(self, ____type, filter)
 end
 return ____exports
  end,
-["main"] = function(...) 
+["pcn"] = function(...) 
 --[[ Generated with https://github.com/TypeScriptToLua/TypeScriptToLua ]]
-local ____exports = {}
-local event = require("event")
-print("Press any key...")
-local keyEvent = event:pullEventAs(event.KeyEvent, "key")
-if keyEvent then
-    print("You pressed key code: " .. tostring(keyEvent.key))
-else
-    print("No key event received.")
+-- Lua Library inline imports
+local function __TS__ArraySlice(self, first, last)
+    local len = #self
+    first = first or 0
+    if first < 0 then
+        first = len + first
+        if first < 0 then
+            first = 0
+        end
+    else
+        if first > len then
+            first = len
+        end
+    end
+    last = last or len
+    if last < 0 then
+        last = len + last
+        if last < 0 then
+            last = 0
+        end
+    else
+        if last > len then
+            last = len
+        end
+    end
+    local out = {}
+    first = first + 1
+    last = last + 1
+    local n = 1
+    while first < last do
+        out[n] = self[first]
+        first = first + 1
+        n = n + 1
+    end
+    return out
 end
-return ____exports
+-- End of Lua Library inline imports
+function startServer(self)
+    rednet.open("right")
+    print("Rednet server started. Waiting for messages...")
+    while true do
+        local senderID, message = rednet.receive()
+        print((("Received from " .. tostring(senderID)) .. ": ") .. tostring(message))
+    end
+end
+function startClient(self, targetID, message)
+    rednet.open("right")
+    rednet.send(targetID, message)
+    print((("Message sent to ID " .. tostring(targetID)) .. ": ") .. message)
+end
+local ____process_argv_0
+if process.argv then
+    ____process_argv_0 = __TS__ArraySlice(process.argv, 2)
+else
+    ____process_argv_0 = _G.arg or ({})
+end
+args = ____process_argv_0
+mode = args[0]
+if mode == "--server" then
+    startServer(_G)
+elseif mode == "--client" then
+    local targetID = tonumber(args[1])
+    local message = args[2] or "Hello from client!"
+    if targetID then
+        startClient(_G, targetID, message)
+    else
+        print("Usage: rednet --client <targetID> <message>")
+    end
+else
+    print("Invalid argument. Please use \"--server\" or \"--client\".")
+end
  end,
 }
 return require("main", ...)
